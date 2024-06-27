@@ -2,7 +2,7 @@
 
 # dependencies
 node_modules/
-
+safeItem/
 # Expo
 .expo/
 dist/
