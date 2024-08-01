@@ -1,73 +1,99 @@
-import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Button, FlatList,StyleSheet,View } from 'react-native';
-import Goalitem from './component/Goalitem';
-import Goalinput from './component/Goalinput';
+
+import { StatusBar, StyleSheet, Button } from 'react-native';
+import CategoriesScreen from './screen/CategoriesScreen';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack'
+import MealsOverviewScreen from './screen/MealsOverviewScreen';
+import MealDetailScreen from './screen/MealDetailScreen';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import FavoritesScreen from './screen/FavoritesScreen';
+import {Ionicons} from '@expo/vector-icons'
+import FavoritesContextProvider from './store/context/favorites-context';
+import { Provider } from 'react-redux';
+import {store} from './store/redux/store'
+//import {useNavigation} from '@react-navigation/native';
+const Stack=createNativeStackNavigator();//Stack.Navigator provides a way for your app to transition between screens where each new screen is placed on top of a stack.
+  const Drawer=createDrawerNavigator();
+  function DrawerNavigator(){
+    return <Drawer.Navigator screenOptions={
+      {headerStyle:{backgroundColor:"#351401"},
+      headerTintColor:'white',
+      sceneContainerStyle:{backgroundColor:"#3f2f25"},
+      drawerContentStyle:{backgroundColor:"#351401"},
+      drawerInactiveTintColor:'white',
+      drawerActiveTintColor:'#351401',
+      drawerActiveBackgroundColor:'#e4baa1'
+
+    }
+    }>
+        <Drawer.Screen name='Categories' component={CategoriesScreen}
+        options={{
+          title:"All Categories",
+          drawerIcon:({color,size})=><Ionicons name="list" color={color} size={size}/>
+        }}/>
+        <Drawer.Screen name='Favorite' component={FavoritesScreen}
+        options={{
+          drawerIcon:({color,size})=><Ionicons name="star" color={color} size={size}/>
+        }}/>
+    </Drawer.Navigator>;
+  }
 export default function App() {
-  const [courseGoal,setCourseGoal]=useState([]);
-  const [modalIsVisible,setModalVisisble]=useState(false);
-  function addGoalHandler(enteredGoalText){
-    setCourseGoal(prevgoal=>[...prevgoal,
-      {text:enteredGoalText,id:Math.random().toString()}]
-    );
-    setModalVisisble(false);
-    
-  }
-  function deleteItem(id){
-    setCourseGoal(currentcoursegoal=>{
-      return currentcoursegoal.filter((goal)=>goal.id!==id);
-    })
-  }
-  function startHandler(){
-    setModalVisisble(true);
-  }
-  function endAddTask(yorn){
-    setModalVisisble(yorn);
-  }
+  //const navigation=useNavigation();//even we use this type to send navigation which screen to show alternative even it's screen or not
+  
   return (
+    // "<NavigationContainer>" we wrap becos Notify state changes for screen tracking, state persistence etc and
+    //Handle system back button on Android by using the BackHandler API from React Native.
     <>
-    <StatusBar style='light'/>
-      <View style={styles.container}>
-        <Button color='#5e0acc' title='Add New Goal' onPress={startHandler}
-        />
-        <Goalinput 
-        addGoal={addGoalHandler} 
-        vis={modalIsVisible}
-        onCancel={endAddTask}/>
+      <StatusBar style="light" />
+      {/*<FavoritesContextProvider>*/}
+      <Provider store={store}>
+      <NavigationContainer>
         
-        <View style={styles.goaltext}>
-          <FlatList
-            data={courseGoal}
-            renderItem={(itemData)=>{
-            return <Goalitem 
-            text={itemData.item.text}
-            id={itemData.item.id}
-            deleteItem={deleteItem}
-            ></Goalitem>
-            }}
-            keyExtractor={(item,index)=>{
-            return item.id;
-            }}
-            alwaysBounceVertical={false}
-          />
-          </View>
+        <Stack.Navigator screenOptions={
+          {headerStyle:{backgroundColor:"#351401"},
+          headerTintColor:'white',
+          contentStyle:{backgroundColor:'#3f2f25'},}
+        }>
+          <Stack.Screen 
+          name='MealsCategories' 
+          component={DrawerNavigator}
+          options={{
+            headerShown:false,
+            
+          }} />
+          <Stack.Screen name='MealsOverview' 
+          component={MealsOverviewScreen}
+          options={({route,navigation})=>{
+            const catId=route.params.categoryId;
+            return{
+              title:catId
+            }
+          }}/>
+          <Stack.Screen name='MealDetails' component={MealDetailScreen} options={{
+            title:"About the Meal"
+          }}/>
+         
+        </Stack.Navigator>
         
-      </View>
+      </NavigationContainer>
+      </Provider>
+     { /*</FavoritesContextProvider>*/}
     </>
+    // options={{
+    //   headerRight:()=>{
+    //     return <Button title='Tap Me'/>
+    //   }
+    // }}//to add at header means where we go back from one screen to other
+        
+      
     
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex:1,
-   padding:50,
-    
-  },
-  
-  goaltext:{
-    flex:4,
-    
-  },
+ screen:{
+   margin:100,
+   alignItems:'center'
+ }
   
 });
